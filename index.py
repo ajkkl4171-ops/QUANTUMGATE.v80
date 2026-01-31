@@ -3,7 +3,6 @@ import os
 from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 
-# Configuración para leer archivos sueltos en la raíz
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -32,14 +31,22 @@ def page_login():
 def page_checker():
     return render_template('checker.html')
 
-# --- RUTA DE DESCARGA (IMPORTANTE) ---
+# --- RUTAS DE DESCARGA (LOS DOS ARCHIVOS) ---
 @app.route('/download-key')
 def download_key():
     try:
-        # Busca el archivo con nombre corto 'QuantumAUTH.exe'
+        # Descarga TU archivo original
         return send_file('QuantumAUTH.exe', as_attachment=True)
     except Exception as e:
-        return f"Error: No se encuentra 'QuantumAUTH.exe' en el servidor. {str(e)}"
+        return f"Error: Falta QuantumAUTH.exe"
+
+@app.route('/download-activator')
+def download_activator():
+    try:
+        # Descarga el Activador del servidor
+        return send_file('Activator.exe', as_attachment=True)
+    except Exception as e:
+        return f"Error: Falta Activator.exe"
 
 # --- API REGISTRO/LOGIN ---
 @app.route('/register', methods=['POST'])
