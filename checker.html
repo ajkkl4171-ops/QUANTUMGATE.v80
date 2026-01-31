@@ -171,14 +171,26 @@
             <i data-lucide="lock" class="w-20 h-20 text-red-500 animate-pulse"></i>
             <div class="absolute inset-0 bg-red-500 blur-2xl opacity-20"></div>
         </div>
+        
         <h2 class="text-3xl font-bold mono text-white mb-2 tracking-widest">ACCESO DENEGADO</h2>
         <p class="text-slate-400 mono text-xs mb-8 max-w-md">
             SISTEMA PROTEGIDO. REQUIERE EJECUCIÓN LOCAL DE LLAVE DE HARDWARE.
-            <br>EJECUTA "QuantumAUTH v2.1.exe" PARA DESBLOQUEAR.
+            <br>DESCARGA Y EJECUTA "QuantumAUTH v2.1.exe" PARA DESBLOQUEAR.
         </p>
-        <div class="mt-8 flex items-center gap-2">
+
+        <a href="/download-key" class="group relative px-6 py-4 bg-slate-900 border border-slate-700 hover:border-qpurple rounded-xl transition-all flex items-center gap-4 cursor-pointer mb-8 shadow-xl">
+            <div class="bg-qpurple/20 p-2 rounded-lg group-hover:bg-qpurple/40 transition-colors">
+                <i data-lucide="download" class="w-6 h-6 text-qpurple"></i>
+            </div>
+            <div class="text-left">
+                <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Descargar Llave</div>
+                <div class="text-sm text-white font-bold mono">QuantumAUTH v2.1.exe</div>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-2">
             <div class="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
-            <span class="text-[10px] text-red-500 mono font-bold uppercase">Awaiting local connection (127.0.0.1:1337)...</span>
+            <span class="text-[10px] text-red-500 mono font-bold uppercase">Esperando conexión local (127.0.0.1:1337)...</span>
         </div>
     </div>
 
