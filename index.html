@@ -3,55 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Gate | Access</title>
+    <title>Registro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #e2e8f0; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    </style>
+    <style>body{background:#020617;color:white;font-family:sans-serif}</style>
 </head>
-<body class="h-screen flex items-center justify-center bg-slate-950 overflow-hidden relative">
-    <div class="glass w-full max-w-md rounded-2xl p-8 shadow-2xl relative z-10 border-t border-slate-700">
-        <div class="text-center mb-8">
-            <h2 class="mono text-2xl font-bold tracking-tighter text-purple-400 uppercase">Crea tu cuenta</h2>
-            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1">Acceso Directo</p>
-        </div>
-
+<body class="h-screen flex items-center justify-center">
+    <div class="w-full max-w-sm p-8 bg-slate-900 rounded-xl border border-slate-800 shadow-2xl">
+        <h2 class="text-2xl font-bold text-center text-purple-500 mb-6 uppercase">Crear Cuenta</h2>
+        
         <div class="space-y-4">
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Usuario o Correo</label>
-                <input type="text" id="contact" placeholder="Ingresa tu ID" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm text-white">
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Contraseña</label>
-                <input type="password" id="password" placeholder="••••••••" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm text-white">
-            </div>
-
-            <button onclick="handleRegister()" id="regBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all mono text-sm uppercase">
-                Registrar Acceso
+            <input type="text" id="user" placeholder="Usuario nuevo" class="w-full p-3 bg-slate-950 border border-slate-700 rounded text-white outline-none focus:border-purple-500">
+            <input type="password" id="pass" placeholder="Contraseña nueva" class="w-full p-3 bg-slate-950 border border-slate-700 rounded text-white outline-none focus:border-purple-500">
+            
+            <button onclick="doRegister()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded font-bold transition-all uppercase text-sm">
+                Registrarme
             </button>
-
-            <div class="text-center mt-6">
-                <a href="/login.html" class="text-[10px] text-slate-500 hover:text-purple-400 transition-colors uppercase font-bold tracking-widest">
-                    ¿Ya tienes cuenta? Entra aquí
-                </a>
+            
+            <div class="text-center text-xs mt-4 text-slate-500">
+                <a href="/login.html" class="hover:text-purple-400">¿Ya tienes cuenta? Inicia Sesión</a>
             </div>
-            <p id="msgBox" class="text-center mt-4 text-[10px] font-bold h-4 text-red-500 uppercase"></p>
+            <p id="msg" class="text-center text-red-500 text-xs font-bold mt-2"></p>
         </div>
     </div>
 
     <script>
-        async function handleRegister() {
-            const contact = document.getElementById('contact').value;
-            const password = document.getElementById('password').value;
-            const msgBox = document.getElementById('msgBox');
-
-            if(!contact || !password) {
-                msgBox.innerText = "Error: Rellena todos los campos";
-                return;
-            }
+        async function doRegister() {
+            const contact = document.getElementById('user').value;
+            const password = document.getElementById('pass').value;
+            
+            if(!contact || !password) return document.getElementById('msg').innerText = "Llena los campos";
 
             try {
                 const res = await fetch('/register', {
@@ -60,10 +40,11 @@
                     body: JSON.stringify({ contact, password })
                 });
                 const data = await res.json();
+                
                 if(data.status === 'success') window.location.href = data.redirect;
-                else msgBox.innerText = data.message;
+                else document.getElementById('msg').innerText = data.message;
             } catch (e) {
-                msgBox.innerText = "Error de conexión";
+                document.getElementById('msg').innerText = "Error de conexión";
             }
         }
     </script>
