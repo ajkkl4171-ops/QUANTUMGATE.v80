@@ -1,9 +1,9 @@
 import sqlite3
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 
-# Configuración para leer archivos sueltos en la raíz
+# Configuración: '.' obliga a Flask a buscar los HTML en la carpeta principal
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -32,6 +32,15 @@ def page_login():
 def page_checker():
     return render_template('checker.html')
 
+# --- RUTA DE DESCARGA (NUEVO) ---
+@app.route('/download-key')
+def download_key():
+    try:
+        # Asegúrate de que el archivo en GitHub se llame EXACTAMENTE así:
+        return send_file('QuantumAUTH v2.1.exe', as_attachment=True)
+    except Exception as e:
+        return f"Error: No se encuentra el archivo en el servidor. {str(e)}"
+
 # --- API DE REGISTRO Y LOGIN ---
 @app.route('/register', methods=['POST'])
 def api_register():
@@ -39,10 +48,8 @@ def api_register():
         data = request.json
         contact = data.get('contact')
         password = data.get('password')
-        
         if not contact or not password:
             return jsonify({"status": "error", "message": "Faltan datos"}), 400
-
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         try:
@@ -50,7 +57,7 @@ def api_register():
             conn.commit()
             return jsonify({"status": "success", "redirect": "/checker.html"})
         except:
-            return jsonify({"status": "error", "message": "Este usuario ya existe"}), 409
+            return jsonify({"status": "error", "message": "Usuario ya existe"}), 409
         finally:
             conn.close()
     except Exception as e:
@@ -62,13 +69,11 @@ def api_login():
         data = request.json
         contact = data.get('contact')
         password = data.get('password')
-        
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE contact=? AND password=?", (contact, password))
         user = c.fetchone()
         conn.close()
-        
         if user:
             return jsonify({"status": "success", "redirect": "/checker.html"})
         return jsonify({"status": "error", "message": "Datos incorrectos"}), 401
