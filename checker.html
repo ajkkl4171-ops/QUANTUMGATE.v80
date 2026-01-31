@@ -1,117 +1,332 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum | Secure Terminal</title>
+    <title>Quantum Gate | Enterprise Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        qdark: '#020617',
+                        qpurple: '#a855f7',
+                        qcyan: '#06b6d4',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'JetBrains Mono', monospace; background-color: #020617; color: #e2e8f0; }
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        #securityLock { transition: all 0.5s ease; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #e2e8f0; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .neon-border-gradient:focus-within {
+            border-color: transparent;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), linear-gradient(to right, #a855f7, #06b6d4);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+        }
+        .btn-gradient { background: linear-gradient(135deg, #a855f7, #6366f1); }
+        .btn-gradient:hover { background: linear-gradient(135deg, #9333ea, #4f46e5); box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; border: 1px solid #0f172a; }
+        .tool-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: rgba(30, 41, 59, 0.5); border: 1px solid rgba(51, 65, 85, 1); transition: all 0.2s; border-radius: 0.5rem; padding: 0.5rem; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; }
+        .tool-btn:hover { border-color: rgba(6, 182, 212, 0.5); background-color: rgb(30, 41, 59); color: #06b6d4; }
     </style>
 </head>
-<body class="h-screen p-4 flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col overflow-hidden selection:bg-qpurple selection:text-white bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-qdark to-qdark">
 
-    <div id="securityLock" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center text-center p-6">
-        <div class="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-6"></div>
-        <h1 class="text-2xl font-bold text-red-500 mb-2 uppercase">Hardware Key Required</h1>
-        <p class="text-slate-500 text-[10px] tracking-widest uppercase">Run QuantumAUTH.exe to unlock terminal</p>
-    </div>
+    <header class="h-14 border-b border-slate-800/80 flex items-center justify-between px-6 bg-qdark/90 backdrop-blur-md z-50 shadow-lg shadow-black/20">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <i data-lucide="cpu" class="text-qpurple w-5 h-5 relative z-10"></i>
+                <div class="absolute inset-0 bg-qpurple blur-md opacity-50 animate-pulse"></div>
+            </div>
+            <span class="mono text-sm font-bold tracking-tight text-white">QUANTUM<span class="text-qpurple">GATE</span>.v8 <span class="text-[10px] text-qcyan px-2 py-0.5 bg-qcyan/10 rounded border border-qcyan/20 ml-2">ENTERPRISE</span></span>
+        </div>
+        <div class="flex items-center gap-4 text-[10px] mono">
+            <div class="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded border border-slate-800">
+                <div id="statusDot" class="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]"></div>
+                <span id="statusText" class="text-slate-300 font-semibold uppercase">System Operational</span>
+            </div>
+            <span id="clock" class="text-slate-500">00:00:00 UTC</span>
+        </div>
+    </header>
 
-    <div class="max-w-6xl mx-auto w-full h-full flex flex-col">
-        <header class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
-            <h1 class="text-lg font-bold text-purple-500">QUANTUM_GATE.v8</h1>
-            <div id="status" class="text-[10px] text-green-500 font-bold">● SYSTEM_ONLINE</div>
-        </header>
-
-        <div class="grid grid-cols-12 gap-4 flex-1 min-h-0">
-            <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
-                <div class="glass p-4 rounded-xl flex-1 flex flex-col">
-                    <label class="text-[9px] text-slate-500 font-bold mb-2 uppercase tracking-widest text-center">Data Stream</label>
-                    <textarea id="inputData" class="flex-1 bg-black/40 border border-slate-800 p-3 rounded-lg text-[11px] text-cyan-400 outline-none focus:border-purple-500 resize-none custom-scrollbar" placeholder="CARD|MM|YY|CVV"></textarea>
+    <main class="flex-1 p-5 grid grid-cols-12 gap-5 overflow-hidden relative">
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-5 z-20 h-full">
+            <div class="glass p-5 rounded-2xl flex-1 flex flex-col shadow-2xl overflow-hidden">
+                
+                <div class="mb-4 relative z-30">
+                    <label class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block flex items-center gap-1"><i data-lucide="network" class="w-3 h-3"></i> Processing Node</label>
+                    <button id="gateDropdownBtn" onclick="toggleDropdown()" class="w-full glass-input p-3 rounded-xl flex justify-between items-center text-xs mono text-left hover:border-qpurple/50 transition-all group">
+                        <span id="selectedGate" class="text-qcyan font-bold flex items-center gap-2"><i data-lucide="rotate-cw" class="w-3 h-3"></i> Auto-Rotation Protocol</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-hover:text-qpurple transition-colors"></i>
+                    </button>
                     
-                    <button onclick="startCheck()" id="btnStart" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all text-xs uppercase tracking-widest">
-                        Execute Check
+                    <div id="gateDropdown" class="hidden absolute top-full left-0 w-full mt-2 bg-qdark border border-slate-700 rounded-xl shadow-xl max-h-64 flex flex-col z-50 overflow-hidden">
+                        <div class="p-2 border-b border-slate-800 relative">
+                            <i data-lucide="search" class="absolute left-4 top-4 w-3 h-3 text-slate-500"></i>
+                            <input type="text" id="gateSearch" placeholder="Filter nodes..." class="w-full bg-slate-950 text-xs pl-8 p-2 rounded-lg border border-slate-800 outline-none focus:border-qpurple text-slate-300">
+                        </div>
+                        <div id="gateList" class="overflow-y-auto custom-scrollbar flex-1 p-1"></div>
+                    </div>
+                </div>
+
+                <div class="flex-1 relative group neon-border-gradient rounded-xl transition-all duration-500 border border-slate-700/50 mb-4 flex flex-col">
+                    <div class="flex justify-between items-center px-4 py-2 border-b border-slate-800/50 bg-slate-900/30 rounded-t-xl">
+                        <span class="text-[9px] text-slate-500 font-bold tracking-widest">INPUT STREAM</span>
+                        <button onclick="clearInput()" class="text-[9px] text-red-400 hover:text-white flex items-center gap-1 uppercase font-bold transition-colors">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i> Clear List
+                        </button>
+                    </div>
+                    <textarea id="inputData" class="w-full h-full bg-transparent p-4 mono text-xs text-qcyan/90 outline-none rounded-b-xl resize-none custom-scrollbar z-10 relative placeholder:text-slate-700" placeholder="PASTE CARDS HERE..."></textarea>
+                    <div class="absolute bottom-2 right-3 text-[9px] text-slate-600 mono bg-qdark/80 px-2 py-1 rounded-md border border-slate-800 z-20" id="lineCount">0 UNITS</div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800/50">
+                    <label class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-3 block flex items-center gap-1"><i data-lucide="wrench" class="w-3 h-3"></i> Bin Toolkit</label>
+                    <div class="grid grid-cols-12 gap-2 mb-2">
+                        <div class="col-span-4 glass-input p-2 rounded-lg flex items-center gap-2">
+                            <i data-lucide="credit-card" class="w-3 h-3 text-qpurple"></i>
+                            <input type="text" id="binInput" placeholder="BIN" class="bg-transparent border-none outline-none text-xs mono text-white w-full placeholder:text-slate-600" maxlength="8">
+                        </div>
+                        <button onclick="simulateTool('binGen')" class="col-span-4 tool-btn hover:bg-green-500/10 hover:border-green-500 hover:text-green-400 text-white">
+                            <i data-lucide="cpu" class="w-3 h-3"></i> Generate
+                        </button>
+                        <button onclick="simulateTool('extraGen')" class="col-span-4 tool-btn hover:bg-yellow-500/10 hover:border-yellow-500 hover:text-yellow-400 text-white">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i> Extras
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="simulateTool('cookies')" id="btnCookies" class="tool-btn hover:bg-blue-500/10 hover:border-blue-500 hover:text-blue-400 text-white">
+                            <i data-lucide="cookie" class="w-3 h-3"></i> Cookies
+                        </button>
+                        <button onclick="simulateTool('cleaner')" class="tool-btn text-white"><i data-lucide="eraser" class="w-3 h-3"></i> Clean</button>
+                        <button onclick="simulateTool('dedupe')" class="tool-btn text-white"><i data-lucide="copy-x" class="w-3 h-3"></i> Dedupe</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <button id="btnStart" onclick="startSequence()" class="col-span-2 btn-gradient text-white p-3.5 rounded-xl font-bold text-xs uppercase tracking-[0.2em] transition-all flex justify-center items-center gap-2 group relative overflow-hidden shadow-lg shadow-purple-900/20">
+                        <span class="relative z-10">EXECUTE</span>
+                        <i data-lucide="play" class="w-4 h-4 fill-current relative z-10"></i>
+                    </button>
+                    <button id="btnStop" onclick="stopSequence()" class="col-span-1 bg-red-900/20 border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white p-3.5 rounded-xl font-bold text-xs uppercase tracking-[0.2em] transition-all flex justify-center items-center gap-2 shadow-lg shadow-red-900/10">
+                        <span>STOP</span>
+                        <i data-lucide="square" class="w-3 h-3 fill-current"></i>
                     </button>
                 </div>
             </div>
+        </div>
 
-            <div class="col-span-12 lg:col-span-8 glass rounded-xl flex flex-col overflow-hidden">
-                <div class="bg-slate-900/80 p-2 px-4 border-b border-slate-800 flex justify-between">
-                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Live Output</span>
-                    <div class="flex gap-4 text-[9px]">
-                        <span class="text-green-400">LIVE: <span id="countLive">0</span></span>
-                        <span class="text-red-400">DEAD: <span id="countDead">0</span></span>
-                    </div>
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-5 overflow-hidden z-10 h-full">
+            <div class="grid grid-cols-4 gap-4">
+                <div class="glass p-5 rounded-2xl border-b-[3px] border-green-500 bg-gradient-to-b from-green-500/5 to-transparent">
+                    <div class="flex justify-between items-start mb-3"><span class="text-[9px] text-green-300/70 uppercase tracking-wider font-bold">Approved</span><i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i></div>
+                    <span id="statLive" class="text-3xl font-bold text-green-400 mono leading-none">0</span>
                 </div>
-                <div id="console" class="flex-1 p-4 text-[10px] overflow-y-auto custom-scrollbar space-y-1 bg-black/20">
-                    <div class="text-slate-600">root@quantum:~# awaiting sequence...</div>
+                <div class="glass p-5 rounded-2xl border-b-[3px] border-red-500 bg-gradient-to-b from-red-500/5 to-transparent">
+                    <div class="flex justify-between items-start mb-3"><span class="text-[9px] text-red-300/70 uppercase tracking-wider font-bold">Declined</span><i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i></div>
+                    <span id="statDead" class="text-3xl font-bold text-red-400 mono leading-none">0</span>
+                </div>
+                <div class="glass p-5 rounded-2xl border-b-[3px] border-qcyan bg-gradient-to-b from-qcyan/5 to-transparent">
+                    <div class="flex justify-between items-start mb-3"><span class="text-[9px] text-qcyan/70 uppercase tracking-wider font-bold">Pending</span><i data-lucide="activity-square" class="w-4 h-4 text-qcyan"></i></div>
+                    <span id="statRemain" class="text-3xl font-bold text-qcyan mono leading-none">0</span>
+                </div>
+                <div class="glass p-5 rounded-2xl border-b-[3px] border-qpurple bg-gradient-to-b from-qpurple/5 to-transparent">
+                    <div class="flex justify-between items-start mb-3"><span class="text-[9px] text-qpurple/70 uppercase tracking-wider font-bold">Total</span><i data-lucide="layers" class="w-4 h-4 text-qpurple"></i></div>
+                    <span id="statTotal" class="text-3xl font-bold text-qpurple mono leading-none">0</span>
                 </div>
             </div>
+
+            <div class="glass flex-1 rounded-2xl flex flex-col overflow-hidden relative border-t border-slate-700/50">
+                <div class="h-9 bg-qdark/90 border-b border-slate-800 flex items-center justify-between px-4 backdrop-blur-sm">
+                    <div class="flex gap-2 items-center">
+                        <i data-lucide="terminal-square" class="w-3 h-3 text-slate-400"></i>
+                        <span id="processLabel" class="text-[9px] mono text-slate-400 uppercase tracking-widest">Console // Idle State</span>
+                    </div>
+                </div>
+
+                <div class="h-0.5 w-full bg-qdark relative overflow-hidden">
+                    <div id="activeProgress" class="h-full bg-gradient-to-r from-qpurple via-qcyan to-qpurple w-0 shadow-[0_0_15px_#06b6d4]"></div>
+                </div>
+
+                <div id="consoleLog" class="flex-1 p-4 font-mono text-[11px] overflow-y-auto custom-scrollbar space-y-1.5 bg-black/30 relative flex flex-col-reverse">
+                    <div class="text-slate-500">root@quantum:~# awaiting input stream...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="securityLock" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-10 transition-all duration-500">
+        <div class="relative mb-8">
+            <i data-lucide="lock" class="w-20 h-20 text-red-500 animate-pulse"></i>
+            <div class="absolute inset-0 bg-red-500 blur-2xl opacity-20"></div>
+        </div>
+        <h2 class="text-3xl font-bold mono text-white mb-2 tracking-widest">ACCESO DENEGADO</h2>
+        <p class="text-slate-400 mono text-xs mb-8 max-w-md">
+            SISTEMA PROTEGIDO. REQUIERE EJECUCIÓN LOCAL DE LLAVE DE HARDWARE.
+            <br>EJECUTA "QuantumAUTH v2.1.exe" PARA DESBLOQUEAR.
+        </p>
+        <div class="mt-8 flex items-center gap-2">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+            <span class="text-[10px] text-red-500 mono font-bold uppercase">Awaiting local connection (127.0.0.1:1337)...</span>
         </div>
     </div>
 
     <script>
-        const consoleEl = document.getElementById('console');
-        const lockScreen = document.getElementById('securityLock');
-        let isAuthenticated = false;
+        lucide.createIcons();
 
-        function addLog(msg, color = "text-slate-400") {
-            const div = document.createElement('div');
-            div.className = `${color} border-l-2 border-current pl-2 py-1 bg-white/5`;
-            div.innerHTML = `<span class="opacity-30 mr-2">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
-            consoleEl.prepend(div);
+        // --- GATES LIST ---
+        const gateList = [
+            "Auto-Rotation Protocol (Default)", "Stripe V3 [Auth-Flow_NA]", "Stripe [SCA_EU]", 
+            "Stripe Charge [Legacy]", "Braintree [GraphQL]", "Braintree [DropUI]",
+            "Adyen [API_v69]", "Authorize.Net [CIM]", "Cybersource [Flex]", 
+            "WorldPay [Direct]", "Square [Connect]", "Shopify [Monolith]", 
+            "PayPal [Rest_API]", "2Checkout [Hosted]", "BlueSnap [API]", 
+            "MercadoPago [Pro]", "Skrill [Quick]", "Wise [Transfer]"
+        ];
+
+        // --- DROPDOWN LOGIC ---
+        const dropdown = document.getElementById('gateDropdown');
+        const searchInput = document.getElementById('gateSearch');
+        const listContainer = document.getElementById('gateList');
+        const selectedLabel = document.getElementById('selectedGate');
+
+        function populateGates(filter = "") {
+            listContainer.innerHTML = "";
+            gateList.forEach(gate => {
+                if (gate.toLowerCase().includes(filter.toLowerCase())) {
+                    const item = document.createElement('div');
+                    item.className = "px-4 py-2 hover:bg-qpurple/10 cursor-pointer text-xs text-slate-300 hover:text-white border-l-2 border-transparent hover:border-qpurple flex items-center gap-2";
+                    item.innerHTML = `<i data-lucide="server" class="w-3 h-3 opacity-50"></i> ${gate}`;
+                    item.onclick = () => {
+                        selectedLabel.innerHTML = `<i data-lucide="rotate-cw" class="w-3 h-3"></i> ${gate}`;
+                        selectedLabel.classList.replace('text-qcyan', 'text-qpurple');
+                        dropdown.classList.add('hidden');
+                        lucide.createIcons();
+                    };
+                    listContainer.appendChild(item);
+                }
+            });
+            lucide.createIcons();
         }
 
-        // Lógica de conexión con el .exe local
+        function toggleDropdown() {
+            dropdown.classList.toggle('hidden');
+            if(!dropdown.classList.contains('hidden')) { searchInput.focus(); populateGates(); }
+        }
+        searchInput.addEventListener('input', (e) => populateGates(e.target.value));
+
+        // --- TOOLS ---
+        document.getElementById('inputData').addEventListener('input', function() {
+            const lines = this.value.split('\n').filter(x => x.trim()).length;
+            document.getElementById('lineCount').innerText = `${lines} UNITS`;
+        });
+
+        function clearInput() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('lineCount').innerText = '0 UNITS';
+            logToConsole("[SYSTEM] Buffer cleared.", "text-slate-500");
+        }
+
+        function simulateTool(toolType) {
+            const area = document.getElementById('inputData');
+            const bin = document.getElementById('binInput').value;
+            if((toolType === 'binGen' || toolType === 'extraGen') && bin.length < 6) return alert("ENTER BIN");
+
+            logToConsole(`[TOOL] Subroutine: ${toolType.toUpperCase()}...`, "text-qcyan");
+            setTimeout(() => {
+                if(toolType === 'binGen'){
+                    let d = ""; for(let i=0; i<10; i++) d += `${bin}${Math.floor(Math.random()*1e10)}|01|2028|${Math.floor(Math.random()*900)+100}\n`;
+                    area.value = d + area.value;
+                    logToConsole(`[OK] 10 Cards Generated.`, "text-green-400");
+                } else if(toolType === 'cleaner'){
+                    area.value = area.value.replace(/[^0-9|\n]/g, "");
+                    logToConsole("[OK] Format cleaned.", "text-qpurple");
+                } else if(toolType === 'dedupe'){
+                    area.value = [...new Set(area.value.split('\n'))].join('\n');
+                    logToConsole("[OK] Duplicates removed.", "text-qpurple");
+                } else if(toolType === 'cookies'){
+                    logToConsole("[OK] Session Cookies Injecting...", "text-blue-400");
+                }
+                area.dispatchEvent(new Event('input'));
+            }, 500);
+        }
+
+        // --- CHECKER CORE ---
+        let isRunning = false, shouldStop = false;
+        const WAIT_TIME = 40;
+
+        async function startSequence() {
+            if(isRunning) return;
+            const lines = document.getElementById('inputData').value.split('\n').filter(l => l.trim());
+            if(!lines.length) return;
+
+            isRunning = true; shouldStop = false;
+            document.getElementById('statTotal').innerText = lines.length;
+            let lives = 0, deads = 0;
+
+            for(let i=0; i < lines.length; i++){
+                if(shouldStop) break;
+                document.getElementById('statRemain').innerText = lines.length - i;
+                logToConsole(`[PROCESS] Checking: ${lines[i].substring(0,8)}...`, "text-slate-400");
+                
+                await countdown(WAIT_TIME);
+                if(shouldStop) break;
+
+                if(Math.random() > 0.85){
+                    lives++; document.getElementById('statLive').innerText = lives;
+                    logToConsole(`[LIVE] ${lines[i]}`, "text-green-400 font-bold bg-green-500/10");
+                } else {
+                    deads++; document.getElementById('statDead').innerText = deads;
+                    logToConsole(`[DEAD] ${lines[i]}`, "text-red-500");
+                }
+            }
+            isRunning = false;
+        }
+
+        function stopSequence() { if(isRunning) shouldStop = true; logToConsole("[STOP] Kill signal sent.", "text-red-500"); }
+
+        function countdown(s) {
+            return new Promise(res => {
+                let l = s; const bar = document.getElementById('activeProgress');
+                const it = setInterval(() => {
+                    l--; bar.style.width = `${((s-l)/s)*100}%`;
+                    if(l<=0 || shouldStop){ clearInterval(it); bar.style.width="0%"; res(); }
+                }, 1000);
+            });
+        }
+
+        function logToConsole(m, c) {
+            const d = document.createElement('div');
+            d.className = `py-1 ${c} border-b border-slate-800/20`;
+            d.innerHTML = `<span class="opacity-30 mr-2">[${new Date().toLocaleTimeString()}]</span>${m}`;
+            document.getElementById('consoleLog').prepend(d);
+        }
+
+        // --- SECURITY LOGIC (AUTH EXE) ---
         async function checkAuth() {
             try {
-                const res = await fetch('http://127.0.0.1:1337/heartbeat');
-                const data = await res.json();
-                if (data.status === "secure_access_granted" && !isAuthenticated) {
-                    lockScreen.style.opacity = '0';
-                    setTimeout(() => lockScreen.style.display = 'none', 500);
-                    addLog("HARDWARE AUTHENTICATED", "text-green-400");
-                    isAuthenticated = true;
+                const r = await fetch('http://127.0.0.1:1337/heartbeat');
+                const d = await r.json();
+                if(d.status === "secure_access_granted") {
+                    document.getElementById('securityLock').classList.add('opacity-0', 'pointer-events-none');
                 }
-            } catch (e) {
-                if (isAuthenticated) {
-                    lockScreen.style.display = 'flex';
-                    setTimeout(() => lockScreen.style.opacity = '1', 10);
-                    isAuthenticated = false;
-                }
+            } catch(e) {
+                document.getElementById('securityLock').classList.remove('opacity-0', 'pointer-events-none');
             }
         }
-
-        // Simulación de chequeo
-        async function startCheck() {
-            const lines = document.getElementById('inputData').value.split('\n').filter(l => l.trim());
-            if(!lines.length) return alert("EMPTY INPUT");
-
-            document.getElementById('btnStart').disabled = true;
-            addLog(`STARTING SEQUENCE: ${lines.length} UNITS`, "text-purple-400 font-bold");
-
-            for(let card of lines) {
-                addLog(`CHECKING: ${card.substring(0,8)}...`, "text-slate-500");
-                await new Promise(r => setTimeout(r, 1500)); // Simula espera de red
-
-                const isLive = Math.random() > 0.8;
-                if(isLive) {
-                    addLog(`APPROVED: ${card}`, "text-green-400 font-bold");
-                    document.getElementById('countLive').innerText = parseInt(document.getElementById('countLive').innerText) + 1;
-                } else {
-                    addLog(`DECLINED: ${card}`, "text-red-500");
-                    document.getElementById('countDead').innerText = parseInt(document.getElementById('countDead').innerText) + 1;
-                }
-            }
-            document.getElementById('btnStart').disabled = false;
-        }
-
         setInterval(checkAuth, 2000);
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString() + " UTC"; }, 1000);
     </script>
 </body>
 </html>
