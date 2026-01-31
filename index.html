@@ -10,64 +10,48 @@
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: #e2e8f0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center bg-slate-950 overflow-hidden relative">
-
-    <div class="absolute inset-0 z-0">
-        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-[100px]"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-cyan-600/20 rounded-full blur-[100px]"></div>
-    </div>
-
-    <div class="glass w-full max-w-md rounded-2xl p-8 shadow-2xl relative z-10 border-t border-slate-700 glow-purple">
+    <div class="glass w-full max-w-md rounded-2xl p-8 shadow-2xl relative z-10 border-t border-slate-700">
         <div class="text-center mb-8">
-            <h2 class="mono text-2xl font-bold tracking-tighter text-purple-400">QUANTUM GATE</h2>
-            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1">Security Protocol v2.1</p>
+            <h2 class="mono text-2xl font-bold tracking-tighter text-purple-400">REGISTRO</h2>
+            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1">Quantum Security Protocol</p>
         </div>
 
         <div class="space-y-4">
             <div>
-                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">User Contact</label>
-                <input type="text" id="contact" placeholder="ID / TELEGRAM / DISCORD" 
-                    class="w-full mt-1 bg-slate-900/50 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none transition-all mono text-sm">
+                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Usuario / Email</label>
+                <input type="text" id="contact" placeholder="ID de acceso" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm">
             </div>
             <div>
-                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Access Key</label>
-                <input type="password" id="password" placeholder="••••••••" 
-                    class="w-full mt-1 bg-slate-900/50 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none transition-all mono text-sm">
+                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Contraseña</label>
+                <input type="password" id="password" placeholder="••••••••" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm">
             </div>
 
-            <button onclick="handleAuth()" id="actionBtn" 
-                class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all transform active:scale-95 mono text-sm">
-                INITIALIZE ACCESS
+            <button onclick="handleRegister()" id="regBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all mono text-sm">
+                CREAR CUENTA
             </button>
 
             <div class="text-center mt-6">
                 <a href="/login.html" class="text-[10px] text-slate-500 hover:text-purple-400 transition-colors uppercase font-bold tracking-widest">
-                    Already have access? Login
+                    ¿Ya tienes cuenta? Inicia Sesión
                 </a>
             </div>
-            
-            <p id="msgBox" class="text-center mt-4 text-[10px] font-bold h-4"></p>
+            <p id="msgBox" class="text-center mt-4 text-[10px] font-bold h-4 text-red-500"></p>
         </div>
     </div>
 
     <script>
-        async function handleAuth() {
+        async function handleRegister() {
             const contact = document.getElementById('contact').value;
             const password = document.getElementById('password').value;
             const msgBox = document.getElementById('msgBox');
-            const btn = document.getElementById('actionBtn');
 
             if(!contact || !password) {
-                msgBox.innerText = "ERROR: EMPTY FIELDS";
-                msgBox.className = "text-center mt-4 text-[10px] font-bold h-4 text-red-500";
+                msgBox.innerText = "ERROR: CAMPOS VACÍOS";
                 return;
             }
-
-            btn.innerText = "ENCRYPTING...";
-            btn.disabled = true;
 
             try {
                 const res = await fetch('/register', {
@@ -76,19 +60,11 @@
                     body: JSON.stringify({ contact, password })
                 });
                 const data = await res.json();
-                
-                if(data.status === 'success') {
-                    window.location.href = data.redirect;
-                } else {
-                    msgBox.innerText = "ERROR: " + data.message.toUpperCase();
-                    msgBox.className = "text-center mt-4 text-[10px] font-bold h-4 text-red-500";
-                }
+                if(data.status === 'success') window.location.href = data.redirect;
+                else msgBox.innerText = "ERROR: " + data.message.toUpperCase();
             } catch (e) {
-                msgBox.innerText = "CONNECTION FAILED";
-                msgBox.className = "text-center mt-4 text-[10px] font-bold h-4 text-red-500";
+                msgBox.innerText = "ERROR DE CONEXIÓN";
             }
-            btn.innerText = "INITIALIZE ACCESS";
-            btn.disabled = false;
         }
     </script>
 </body>
