@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Gate | Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: #e2e8f0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -15,30 +15,30 @@
 <body class="h-screen flex items-center justify-center bg-slate-950 overflow-hidden relative">
     <div class="glass w-full max-w-md rounded-2xl p-8 shadow-2xl relative z-10 border-t border-slate-700">
         <div class="text-center mb-8">
-            <h2 class="mono text-2xl font-bold tracking-tighter text-purple-400">REGISTRO</h2>
-            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1">Quantum Security Protocol</p>
+            <h2 class="mono text-2xl font-bold tracking-tighter text-purple-400 uppercase">Crea tu cuenta</h2>
+            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1">Acceso Directo</p>
         </div>
 
         <div class="space-y-4">
             <div>
-                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Usuario / Email</label>
-                <input type="text" id="contact" placeholder="ID de acceso" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm">
+                <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Usuario o Correo</label>
+                <input type="text" id="contact" placeholder="Ingresa tu ID" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm text-white">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Contraseña</label>
-                <input type="password" id="password" placeholder="••••••••" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm">
+                <input type="password" id="password" placeholder="••••••••" class="w-full mt-1 bg-slate-900 border border-slate-700 p-3 rounded-lg focus:border-purple-500 outline-none mono text-sm text-white">
             </div>
 
-            <button onclick="handleRegister()" id="regBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all mono text-sm">
-                CREAR CUENTA
+            <button onclick="handleRegister()" id="regBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all mono text-sm uppercase">
+                Registrar Acceso
             </button>
 
             <div class="text-center mt-6">
                 <a href="/login.html" class="text-[10px] text-slate-500 hover:text-purple-400 transition-colors uppercase font-bold tracking-widest">
-                    ¿Ya tienes cuenta? Inicia Sesión
+                    ¿Ya tienes cuenta? Entra aquí
                 </a>
             </div>
-            <p id="msgBox" class="text-center mt-4 text-[10px] font-bold h-4 text-red-500"></p>
+            <p id="msgBox" class="text-center mt-4 text-[10px] font-bold h-4 text-red-500 uppercase"></p>
         </div>
     </div>
 
@@ -49,7 +49,7 @@
             const msgBox = document.getElementById('msgBox');
 
             if(!contact || !password) {
-                msgBox.innerText = "ERROR: CAMPOS VACÍOS";
+                msgBox.innerText = "Error: Rellena todos los campos";
                 return;
             }
 
@@ -61,9 +61,9 @@
                 });
                 const data = await res.json();
                 if(data.status === 'success') window.location.href = data.redirect;
-                else msgBox.innerText = "ERROR: " + data.message.toUpperCase();
+                else msgBox.innerText = data.message;
             } catch (e) {
-                msgBox.innerText = "ERROR DE CONEXIÓN";
+                msgBox.innerText = "Error de conexión";
             }
         }
     </script>
