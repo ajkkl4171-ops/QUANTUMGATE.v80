@@ -3,8 +3,7 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-# MODIFICACIÓN CLAVE: 
-# '.' le dice a Flask que busque los HTML en la misma carpeta raíz
+# Configuración para archivos sueltos en la raíz
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -16,19 +15,14 @@ def get_db_connection():
     return conn
 
 def init_db():
-    try:
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS users 
-                     (contact TEXT PRIMARY KEY, password TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"DB Error: {e}")
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users 
+                 (contact TEXT PRIMARY KEY, password TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
+    conn.close()
 
 init_db()
-
-# --- RUTAS ---
 
 @app.route('/')
 def serve_index():
@@ -42,14 +36,16 @@ def serve_login():
 def serve_checker():
     return render_template('checker.html')
 
-# --- API ---
-
 @app.route('/register', methods=['POST'])
 def register_user():
     try:
         data = request.json
         contact = data.get('contact')
         password = data.get('password')
+        
+        if not contact or not password:
+            return jsonify({"status": "error", "message": "Faltan datos"}), 400
+
         conn = get_db_connection()
         c = conn.cursor()
         try:
@@ -57,7 +53,7 @@ def register_user():
             conn.commit()
             return jsonify({"status": "success", "redirect": "/checker.html"})
         except sqlite3.IntegrityError:
-            return jsonify({"status": "error", "message": "Usuario ya existe"}), 409
+            return jsonify({"status": "error", "message": "El usuario ya existe"}), 409
         finally:
             conn.close()
     except Exception as e:
@@ -76,7 +72,7 @@ def login_user():
         conn.close()
         if user:
             return jsonify({"status": "success", "redirect": "/checker.html"})
-        return jsonify({"status": "error", "message": "Credenciales inválidas"}), 401
+        return jsonify({"status": "error", "message": "Acceso denegado"}), 401
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
