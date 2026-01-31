@@ -3,12 +3,11 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-# Configuración limpia para Render
-# Buscamos 'templates' en la misma carpeta que este archivo
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# MODIFICACIÓN CLAVE: 
+# '.' le dice a Flask que busque los HTML en la misma carpeta raíz
+app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
-# Base de datos local
 DB_NAME = 'quantum_users.db' 
 
 def get_db_connection():
@@ -27,24 +26,23 @@ def init_db():
     except Exception as e:
         print(f"DB Error: {e}")
 
-# Inicializamos la DB al arrancar
 init_db()
 
-# --- RUTAS DE NAVEGACIÓN ---
+# --- RUTAS ---
 
 @app.route('/')
 def serve_index():
     return render_template('index.html')
 
 @app.route('/login.html')
-def serve_login_page():
+def serve_login():
     return render_template('login.html')
 
 @app.route('/checker.html')
 def serve_checker():
     return render_template('checker.html')
 
-# --- API ENDPOINTS ---
+# --- API ---
 
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -52,10 +50,6 @@ def register_user():
         data = request.json
         contact = data.get('contact')
         password = data.get('password')
-
-        if not contact or not password:
-            return jsonify({"status": "error", "message": "Campos incompletos"}), 400
-
         conn = get_db_connection()
         c = conn.cursor()
         try:
@@ -63,7 +57,7 @@ def register_user():
             conn.commit()
             return jsonify({"status": "success", "redirect": "/checker.html"})
         except sqlite3.IntegrityError:
-            return jsonify({"status": "error", "message": "El usuario ya existe"}), 409
+            return jsonify({"status": "error", "message": "Usuario ya existe"}), 409
         finally:
             conn.close()
     except Exception as e:
@@ -75,21 +69,17 @@ def login_user():
         data = request.json
         contact = data.get('contact')
         password = data.get('password')
-        
         conn = get_db_connection()
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE contact=? AND password=?", (contact, password))
         user = c.fetchone()
         conn.close()
-        
         if user:
             return jsonify({"status": "success", "redirect": "/checker.html"})
-        else:
-            return jsonify({"status": "error", "message": "Credenciales inválidas"}), 401
+        return jsonify({"status": "error", "message": "Credenciales inválidas"}), 401
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    # Render asigna el puerto mediante la variable de entorno PORT
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
