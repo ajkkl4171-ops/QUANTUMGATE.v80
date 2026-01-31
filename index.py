@@ -3,7 +3,7 @@ import os
 from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 
-# Configuración: '.' obliga a Flask a buscar los HTML en la carpeta principal
+# Configuración para leer archivos sueltos en la raíz
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -19,7 +19,7 @@ def init_db():
 
 init_db()
 
-# --- RUTAS DE LAS PÁGINAS ---
+# --- RUTAS DE PÁGINAS ---
 @app.route('/')
 def page_register():
     return render_template('index.html')
@@ -32,16 +32,16 @@ def page_login():
 def page_checker():
     return render_template('checker.html')
 
-# --- RUTA DE DESCARGA (NUEVO) ---
+# --- RUTA DE DESCARGA ---
 @app.route('/download-key')
 def download_key():
     try:
-        # Asegúrate de que el archivo en GitHub se llame EXACTAMENTE así:
-        return send_file('QuantumAUTH v2.1.exe', as_attachment=True)
+        # AQUI ESTA EL CAMBIO: Ahora busca el archivo con nombre simple
+        return send_file('QuantumAUTH.exe', as_attachment=True)
     except Exception as e:
-        return f"Error: No se encuentra el archivo en el servidor. {str(e)}"
+        return f"Error: No se encuentra 'QuantumAUTH.exe' en el servidor. {str(e)}"
 
-# --- API DE REGISTRO Y LOGIN ---
+# --- API REGISTRO/LOGIN ---
 @app.route('/register', methods=['POST'])
 def api_register():
     try:
@@ -57,7 +57,7 @@ def api_register():
             conn.commit()
             return jsonify({"status": "success", "redirect": "/checker.html"})
         except:
-            return jsonify({"status": "error", "message": "Usuario ya existe"}), 409
+            return jsonify({"status": "error", "message": "Usuario existe"}), 409
         finally:
             conn.close()
     except Exception as e:
