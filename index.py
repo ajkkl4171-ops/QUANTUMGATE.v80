@@ -3,7 +3,7 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-# Configuración para archivos sueltos en la raíz
+# Configuración para archivos sueltos en la raíz de GitHub
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -72,7 +72,7 @@ def login_user():
         conn.close()
         if user:
             return jsonify({"status": "success", "redirect": "/checker.html"})
-        return jsonify({"status": "error", "message": "Acceso denegado"}), 401
+        return jsonify({"status": "error", "message": "Usuario o clave incorrecta"}), 401
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
