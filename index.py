@@ -3,41 +3,38 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-# Configuración para archivos sueltos en la raíz de GitHub
+# Configuración para leer archivos sueltos en la raíz
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
 DB_NAME = 'quantum_users.db' 
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
 def init_db():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users 
-                 (contact TEXT PRIMARY KEY, password TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+                 (contact TEXT PRIMARY KEY, password TEXT)''')
     conn.commit()
     conn.close()
 
 init_db()
 
+# --- RUTAS DE LAS PÁGINAS ---
 @app.route('/')
-def serve_index():
+def page_register():
     return render_template('index.html')
 
 @app.route('/login.html')
-def serve_login():
+def page_login():
     return render_template('login.html')
 
 @app.route('/checker.html')
-def serve_checker():
+def page_checker():
     return render_template('checker.html')
 
+# --- API DE REGISTRO Y LOGIN ---
 @app.route('/register', methods=['POST'])
-def register_user():
+def api_register():
     try:
         data = request.json
         contact = data.get('contact')
@@ -46,33 +43,35 @@ def register_user():
         if not contact or not password:
             return jsonify({"status": "error", "message": "Faltan datos"}), 400
 
-        conn = get_db_connection()
+        conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         try:
             c.execute("INSERT INTO users (contact, password) VALUES (?, ?)", (contact, password))
             conn.commit()
             return jsonify({"status": "success", "redirect": "/checker.html"})
-        except sqlite3.IntegrityError:
-            return jsonify({"status": "error", "message": "El usuario ya existe"}), 409
+        except:
+            return jsonify({"status": "error", "message": "Este usuario ya existe"}), 409
         finally:
             conn.close()
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/login', methods=['POST'])
-def login_user():
+def api_login():
     try:
         data = request.json
         contact = data.get('contact')
         password = data.get('password')
-        conn = get_db_connection()
+        
+        conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE contact=? AND password=?", (contact, password))
         user = c.fetchone()
         conn.close()
+        
         if user:
             return jsonify({"status": "success", "redirect": "/checker.html"})
-        return jsonify({"status": "error", "message": "Usuario o clave incorrecta"}), 401
+        return jsonify({"status": "error", "message": "Datos incorrectos"}), 401
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
