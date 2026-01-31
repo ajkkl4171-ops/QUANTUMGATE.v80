@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum | Secure Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'JetBrains Mono', monospace; background-color: #020617; color: #e2e8f0; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        #securityLock { transition: all 0.5s ease; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="h-screen p-4 flex flex-col overflow-hidden">
+
+    <div id="securityLock" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center text-center p-6">
+        <div class="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h1 class="text-2xl font-bold text-red-500 mb-2 uppercase">Hardware Key Required</h1>
+        <p class="text-slate-500 text-[10px] tracking-widest uppercase">Run QuantumAUTH.exe to unlock terminal</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto w-full h-full flex flex-col">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+            <h1 class="text-lg font-bold text-purple-500">QUANTUM_GATE.v8</h1>
+            <div id="status" class="text-[10px] text-green-500 font-bold">● SYSTEM_ONLINE</div>
+        </header>
+
+        <div class="grid grid-cols-12 gap-4 flex-1 min-h-0">
+            <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+                <div class="glass p-4 rounded-xl flex-1 flex flex-col">
+                    <label class="text-[9px] text-slate-500 font-bold mb-2 uppercase tracking-widest text-center">Data Stream</label>
+                    <textarea id="inputData" class="flex-1 bg-black/40 border border-slate-800 p-3 rounded-lg text-[11px] text-cyan-400 outline-none focus:border-purple-500 resize-none custom-scrollbar" placeholder="CARD|MM|YY|CVV"></textarea>
+                    
+                    <button onclick="startCheck()" id="btnStart" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 transition-all text-xs uppercase tracking-widest">
+                        Execute Check
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-8 glass rounded-xl flex flex-col overflow-hidden">
+                <div class="bg-slate-900/80 p-2 px-4 border-b border-slate-800 flex justify-between">
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Live Output</span>
+                    <div class="flex gap-4 text-[9px]">
+                        <span class="text-green-400">LIVE: <span id="countLive">0</span></span>
+                        <span class="text-red-400">DEAD: <span id="countDead">0</span></span>
+                    </div>
+                </div>
+                <div id="console" class="flex-1 p-4 text-[10px] overflow-y-auto custom-scrollbar space-y-1 bg-black/20">
+                    <div class="text-slate-600">root@quantum:~# awaiting sequence...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const consoleEl = document.getElementById('console');
+        const lockScreen = document.getElementById('securityLock');
+        let isAuthenticated = false;
+
+        function addLog(msg, color = "text-slate-400") {
+            const div = document.createElement('div');
+            div.className = `${color} border-l-2 border-current pl-2 py-1 bg-white/5`;
+            div.innerHTML = `<span class="opacity-30 mr-2">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            consoleEl.prepend(div);
+        }
+
+        // Lógica de conexión con el .exe local
+        async function checkAuth() {
+            try {
+                const res = await fetch('http://127.0.0.1:1337/heartbeat');
+                const data = await res.json();
+                if (data.status === "secure_access_granted" && !isAuthenticated) {
+                    lockScreen.style.opacity = '0';
+                    setTimeout(() => lockScreen.style.display = 'none', 500);
+                    addLog("HARDWARE AUTHENTICATED", "text-green-400");
+                    isAuthenticated = true;
+                }
+            } catch (e) {
+                if (isAuthenticated) {
+                    lockScreen.style.display = 'flex';
+                    setTimeout(() => lockScreen.style.opacity = '1', 10);
+                    isAuthenticated = false;
+                }
+            }
+        }
+
+        // Simulación de chequeo
+        async function startCheck() {
+            const lines = document.getElementById('inputData').value.split('\n').filter(l => l.trim());
+            if(!lines.length) return alert("EMPTY INPUT");
+
+            document.getElementById('btnStart').disabled = true;
+            addLog(`STARTING SEQUENCE: ${lines.length} UNITS`, "text-purple-400 font-bold");
+
+            for(let card of lines) {
+                addLog(`CHECKING: ${card.substring(0,8)}...`, "text-slate-500");
+                await new Promise(r => setTimeout(r, 1500)); // Simula espera de red
+
+                const isLive = Math.random() > 0.8;
+                if(isLive) {
+                    addLog(`APPROVED: ${card}`, "text-green-400 font-bold");
+                    document.getElementById('countLive').innerText = parseInt(document.getElementById('countLive').innerText) + 1;
+                } else {
+                    addLog(`DECLINED: ${card}`, "text-red-500");
+                    document.getElementById('countDead').innerText = parseInt(document.getElementById('countDead').innerText) + 1;
+                }
+            }
+            document.getElementById('btnStart').disabled = false;
+        }
+
+        setInterval(checkAuth, 2000);
+    </script>
+</body>
+</html>
