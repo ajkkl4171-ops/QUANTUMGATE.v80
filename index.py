@@ -32,11 +32,11 @@ def page_login():
 def page_checker():
     return render_template('checker.html')
 
-# --- RUTA DE DESCARGA ---
+# --- RUTA DE DESCARGA (IMPORTANTE) ---
 @app.route('/download-key')
 def download_key():
     try:
-        # AQUI ESTA EL CAMBIO: Ahora busca el archivo con nombre simple
+        # Busca el archivo con nombre corto 'QuantumAUTH.exe'
         return send_file('QuantumAUTH.exe', as_attachment=True)
     except Exception as e:
         return f"Error: No se encuentra 'QuantumAUTH.exe' en el servidor. {str(e)}"
